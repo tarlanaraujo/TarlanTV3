@@ -180,7 +180,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                
+
                 <div class="tab-pane fade" id="live-content" role="tabpanel">
                     <div id="live-channels" class="row">
                         <!-- Live channels -->
@@ -222,7 +222,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                
+
                 <div class="tab-pane fade" id="movie-content" role="tabpanel">
                     <div id="movie-channels" class="row">
                         <!-- Movie channels -->
@@ -264,7 +264,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                
+
                 <div class="tab-pane fade" id="series-content" role="tabpanel">
                     <div id="series-channels" class="row">
                         <!-- Series channels -->
@@ -313,7 +313,6 @@
 
 <script>
 function openChannel(url, name) {
-    // Open in new tab/window
     window.open(url, '_blank');
 }
 
@@ -349,7 +348,7 @@ function exportToHTML() {
         <p>Exportado em ${new Date().toLocaleDateString('pt-BR')}</p>
         <p>Total: {{ total_channels }} canais | AO VIVO: {{ live_count }} | Filmes: {{ movie_count }} | Séries: {{ series_count }}</p>
     </div>
-    
+
     <div class="stats">
         <div class="stat-item">
             <div class="stat-number">{{ total_channels }}</div>
@@ -368,7 +367,7 @@ function exportToHTML() {
             <div>Séries</div>
         </div>
     </div>
-    
+
     <!-- Live Channels -->
     <div class="category">
         <div class="category-header">
@@ -386,7 +385,7 @@ function exportToHTML() {
             {% endfor %}
         </div>
     </div>
-    
+
     <!-- Movies -->
     <div class="category">
         <div class="category-header">
@@ -404,7 +403,7 @@ function exportToHTML() {
             {% endfor %}
         </div>
     </div>
-    
+
     <!-- Series -->
     <div class="category">
         <div class="category-header">
@@ -422,13 +421,13 @@ function exportToHTML() {
             {% endfor %}
         </div>
     </div>
-    
+
     <div style="text-align: center; margin-top: 50px; color: #666;">
         <p>Exportado pelo TarTV - Gerenciador de IPTV</p>
     </div>
 </body>
 </html>`;
-    
+
     // Download the HTML file
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
@@ -446,15 +445,15 @@ document.getElementById('searchInput').addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
     const channelItems = document.querySelectorAll('.channel-item');
-    
+
     channelItems.forEach(item => {
         const name = item.getAttribute('data-name');
         const group = item.getAttribute('data-group');
         const category = item.getAttribute('data-category');
-        
+
         const matchesSearch = name.includes(searchTerm) || group.includes(searchTerm);
         const matchesCategory = !categoryFilter || category === categoryFilter;
-        
+
         if (matchesSearch && matchesCategory) {
             item.style.display = 'block';
         } else {

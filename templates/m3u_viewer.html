@@ -24,7 +24,7 @@
                     {{ playlist.last_updated.strftime('%d/%m/%Y %H:%M') if playlist.last_updated else 'Processando...' }}
                 </p>
             </div>
-            
+
             <div class="text-end">
                 <div class="badge bg-primary fs-6 me-2">
                     <i class="fas fa-tv me-1"></i>
@@ -38,7 +38,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         {% if playlist.status == 'processing' %}
             <div class="alert alert-info" role="alert">
                 <div class="d-flex align-items-center">
@@ -90,7 +90,7 @@
                     </form>
                 </div>
             </div>
-            
+
             <!-- Category Navigation -->
             <div class="row">
                 <div class="col-md-4">
@@ -110,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card category-card h-100">
                         <div class="card-body text-center">
@@ -128,7 +128,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card category-card h-100">
                         <div class="card-body text-center">
@@ -157,6 +157,10 @@
     setTimeout(() => {
         location.reload();
     }, 3000);
+
+    function openChannel(url, name) {
+        window.open(url, '_blank');
+    }
 </script>
 {% endif %}
 {% endblock %}
