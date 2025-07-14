@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Carregando Playlist - {{ playlist.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="mb-2">
+                    <i class="fas fa-list-ul me-2"></i>
+                    {{ playlist.name }}
+                </h1>
+                <p class="text-muted">Processando conteúdo M3U...</p>
+            </div>
+
+            <!-- Progress Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            Processando lista M3U...
+                        </h5>
+                        <span id="progress-text" class="text-muted">0 canais processados</span>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">
+                            <span id="progress-percent">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 id="total-channels" class="text-primary mb-1">0</h4>
+                                <small class="text-muted">Total</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 id="live-channels" class="text-danger mb-1">0</h4>
+                                <small class="text-muted">Canais AO VIVO</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 id="movie-channels" class="text-warning mb-1">0</h4>
+                                <small class="text-muted">Filmes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 id="series-channels" class="text-info mb-1">0</h4>
+                            <small class="text-muted">Séries</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card mb-4" id="export-card" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-download me-2"></i>
+                        Exportar Conteúdo
+                    </h5>
+                    <p class="text-muted">Salve os canais já processados em formato HTML</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button id="export-all" class="btn btn-primary w-100" onclick="exportPlaylist('all')">
+                                <i class="fas fa-download me-1"></i>
+                                Exportar Todos
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button id="export-processed" class="btn btn-outline-primary w-100" onclick="exportPlaylist('processed')">
+                                <i class="fas fa-download me-1"></i>
+                                Exportar Processados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Channels -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Canais Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="recent-channels">
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                            <p>Aguardando processamento...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <button id="view-playlist-btn" class="btn btn-success btn-lg" style="display: none;" 
+                        onclick="window.location.href='{{ url_for('view_playlist', playlist_id=playlist.id) }}'">
+                    <i class="fas fa-eye me-2"></i>
+                    Ver Playlist Completa
+                </button>
+                
+                <button id="continue-anyway-btn" class="btn btn-outline-secondary ms-2" 
+                        onclick="window.location.href='{{ url_for('view_playlist', playlist_id=playlist.id) }}'">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    Continuar Mesmo Assim
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let progressInterval;
+let lastChannelCount = 0;
+
+function updateProgress() {
+    fetch(`/api/playlist/{{ playlist.id }}/progress`)
+        .then(response => response.json())
+        .then(data => {
+            // Update progress bar
+            const progressPercent = data.total_expected > 0 ? 
+                Math.round((data.processed_count / data.total_expected) * 100) : 0;
+            
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+            document.getElementById('progress-percent').textContent = progressPercent + '%';
+            document.getElementById('progress-text').textContent = 
+                `${data.processed_count} de ${data.total_expected} canais processados`;
+            
+            // Update counters
+            document.getElementById('total-channels').textContent = data.processed_count;
+            document.getElementById('live-channels').textContent = data.live_count;
+            document.getElementById('movie-channels').textContent = data.movie_count;
+            document.getElementById('series-channels').textContent = data.series_count;
+            
+            // Show export options if channels are available
+            if (data.processed_count > 0) {
+                document.getElementById('export-card').style.display = 'block';
+            }
+            
+            // Update recent channels if new ones were added
+            if (data.processed_count > lastChannelCount) {
+                updateRecentChannels(data.recent_channels);
+                lastChannelCount = data.processed_count;
+            }
+            
+            // Handle completion
+            if (data.status === 'completed') {
+                document.getElementById('progress-bar').classList.remove('progress-bar-animated');
+                document.getElementById('view-playlist-btn').style.display = 'inline-block';
+                document.querySelector('.card-title i').className = 'fas fa-check-circle text-success me-2';
+                document.querySelector('.card-title').innerHTML = 
+                    '<i class="fas fa-check-circle text-success me-2"></i>Processamento concluído!';
+                clearInterval(progressInterval);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating progress:', error);
+        });
+}
+
+function updateRecentChannels(channels) {
+    const container = document.getElementById('recent-channels');
+    
+    if (channels.length === 0) {
+        return;
+    }
+    
+    // Clear "waiting" message
+    if (container.innerHTML.includes('Aguardando processamento')) {
+        container.innerHTML = '';
+    }
+    
+    // Add new channels
+    channels.forEach(channel => {
+        const channelElement = document.createElement('div');
+        channelElement.className = 'border-bottom py-2';
+        channelElement.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    ${channel.logo ? 
+                        `<img src="${channel.logo}" class="rounded" width="40" height="40" alt="Logo">` :
+                        `<div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            <i class="fas fa-${channel.category_type === 'live' ? 'broadcast-tower' : 
+                                              channel.category_type === 'movie' ? 'film' : 'tv'} text-white"></i>
+                         </div>`
+                    }
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">${channel.name}</h6>
+                    <small class="text-muted">
+                        ${channel.category_type === 'live' ? 'Canal AO VIVO' : 
+                          channel.category_type === 'movie' ? 'Filme' : 'Série'}
+                        ${channel.group_title ? ` • ${channel.group_title}` : ''}
+                    </small>
+                </div>
+                <div class="flex-shrink-0">
+                    <span class="badge bg-${channel.category_type === 'live' ? 'danger' : 
+                                          channel.category_type === 'movie' ? 'warning' : 'info'}">
+                        ${channel.category_type === 'live' ? 'AO VIVO' : 
+                          channel.category_type === 'movie' ? 'FILME' : 'SÉRIE'}
+                    </span>
+                </div>
+            </div>
+        `;
+        container.appendChild(channelElement);
+    });
+    
+    // Keep only last 5 channels
+    while (container.children.length > 5) {
+        container.removeChild(container.firstChild);
+    }
+}
+
+function exportPlaylist(type) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exportando...';
+    
+    fetch(`/api/playlist/{{ playlist.id }}/export?type=${type}`, {
+        method: 'POST'
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}_{{ playlist.name }}.html`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        button.disabled = false;
+        button.innerHTML = originalText;
+    })
+    .catch(error => {
+        console.error('Error exporting playlist:', error);
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+// Start progress monitoring
+document.addEventListener('DOMContentLoaded', function() {
+    updateProgress();
+    progressInterval = setInterval(updateProgress, 2000);
+});
+</script>
+{% endblock %}
