@@ -47,6 +47,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize channel testing
     initializeChannelTesting();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlForm = document.querySelector('form[action$="/upload_m3u"]');
+    const fileForm = document.querySelector('form[action$="/upload_m3u"][enctype="multipart/form-data"]');
+
+    if (urlForm) {
+        urlForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoadingMessage('Carregando a lista da URL, por favor, aguarde...');
+            this.submit();
+        });
+    }
+
+    if (fileForm) {
+        fileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoadingMessage('Carregando a lista do arquivo, por favor, aguarde...');
+            this.submit();
+        });
+    }
+
+    function showLoadingMessage(message) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading-message';
+        loadingDiv.textContent = message;
+        loadingDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 9999;
+        `;
+        document.body.appendChild(loadingDiv);
+        
+        setTimeout(() => loadingDiv.remove(), 5000);
+    }
+});
+
     
     // Initialize responsive behavior
     initializeResponsive();
