@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TarTV - Plataforma de Streaming IPTV</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            border: 1px solid var(--bs-gray-700);
+            border-radius: 12px;
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--bs-dark);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--bs-primary);
+        }
+        
+        .btn-feature {
+            background: var(--bs-primary);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-feature:hover {
+            background: var(--bs-primary);
+            transform: scale(1.05);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-tv me-3"></i>
+                        TarTV
+                    </h1>
+                    <p class="lead mb-4">
+                        Plataforma completa de streaming IPTV. Organize, valide e assista suas listas M3U com facilidade.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-play me-2"></i>Começar Agora
+                    </a>
+                    <a href="#recursos" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-info-circle me-2"></i>Saiba Mais
+                    </a>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <i class="fas fa-satellite-dish" style="font-size: 10rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-tv me-2"></i>
+                TarTV
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Início
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#recursos">
+                            <i class="fas fa-star me-1"></i>Recursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#como-usar">
+                            <i class="fas fa-question-circle me-1"></i>Como Usar
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Features Section -->
+        <div class="row mb-5" id="recursos">
+            <div class="col-12 text-center">
+                <h2 class="h3 mb-4">Funcionalidades Principais</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <!-- Upload M3U -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h4 class="mb-3">Carregar Lista M3U</h4>
+                    <p class="text-muted mb-4">
+                        Faça upload de arquivos M3U/M3U8 ou carregue via URL. Suporte completo para listas IPTV.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-upload me-2"></i>Carregar Lista
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filmes -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h4 class="mb-3">Filmes</h4>
+                    <p class="text-muted mb-4">
+                        Navegue por sua coleção de filmes com posters, categorias e busca inteligente.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-play me-2"></i>Ver Filmes
+                    </a>
+                </div>
+            </div>
+
+            <!-- Séries -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <h4 class="mb-3">Séries</h4>
+                    <p class="text-muted mb-4">
+                        Organize e assista suas séries favoritas com interface moderna e intuitiva.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-list me-2"></i>Ver Séries
+                    </a>
+                </div>
+            </div>
+
+            <!-- Canais Ao Vivo -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-broadcast-tower"></i>
+                    </div>
+                    <h4 class="mb-3">Canais Ao Vivo</h4>
+                    <p class="text-muted mb-4">
+                        Acesse canais de TV ao vivo organizados por categoria com teste de conectividade.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-satellite-dish me-2"></i>Ver Canais
+                    </a>
+                </div>
+            </div>
+
+            <!-- Busca Avançada -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4 class="mb-3">Busca Avançada</h4>
+                    <p class="text-muted mb-4">
+                        Sistema de busca em tempo real com filtros por categoria e tipo de conteúdo.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-search me-2"></i>Buscar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Player Integrado -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h4 class="mb-3">Player Integrado</h4>
+                    <p class="text-muted mb-4">
+                        Reprodução direta no navegador com controles completos e suporte HLS.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn-feature">
+                        <i class="fas fa-play me-2"></i>Reproduzir
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use Section -->
+        <div class="row mb-5" id="como-usar">
+            <div class="col-12 text-center">
+                <h3 class="mb-4">Como Usar o TarTV</h3>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-upload" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>1. Carregar Lista</h5>
+                        <p class="text-muted">Faça upload de arquivo M3U ou cole URL da sua lista IPTV</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-success mb-3">
+                            <i class="fas fa-layer-group" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>2. Organizar</h5>
+                        <p class="text-muted">O sistema organiza automaticamente em Filmes, Séries e Canais</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-info mb-3">
+                            <i class="fas fa-search" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>3. Buscar</h5>
+                        <p class="text-muted">Use a busca avançada para encontrar conteúdo rapidamente</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-play" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>4. Assistir</h5>
+                        <p class="text-muted">Reproduza diretamente no navegador com player integrado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-rocket me-2"></i>
+                            Comece Agora - É Gratuito!
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <p class="mb-3">
+                                    Transforme suas listas M3U em uma experiência de streaming profissional.
+                                    Interface moderna, organização automática e reprodução integrada.
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Suporte completo M3U/M3U8</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Organização automática por categoria</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Player integrado com HLS</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Busca avançada e filtros</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-4 text-center">
+                                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-play me-2"></i>Começar Agora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5><i class="fas fa-tv me-2"></i>TarTV</h5>
+                    <p class="text-muted">Plataforma completa de streaming IPTV com organização automática e interface moderna.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6>Funcionalidades</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check me-2"></i>Filmes e Séries</li>
+                        <li><i class="fas fa-check me-2"></i>Canais Ao Vivo</li>
+                        <li><i class="fas fa-check me-2"></i>Busca Avançada</li>
+                        <li><i class="fas fa-check me-2"></i>Player Integrado</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 TarTV - Plataforma de Streaming IPTV</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

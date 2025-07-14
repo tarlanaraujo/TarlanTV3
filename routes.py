@@ -17,6 +17,16 @@ def index():
     """Main page with upload/URL input options"""
     return render_template('index.html')
 
+@app.route('/home')
+def home_original():
+    """Original home page"""
+    return render_template('index.html')
+
+@app.route('/tartv')
+def tartv_home():
+    """TarTV homepage with Portuguese interface"""
+    return render_template('index_tartv.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_m3u():
     """Handle M3U file upload or URL processing"""

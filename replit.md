@@ -7,6 +7,9 @@ IPTV Manager is a Flask-based web application that allows users to upload, parse
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Platform name: TarTV (Portuguese branding)
+Language: Portuguese interface and content
+Focus: IPTV streaming platform with M3U playlist support
 
 ## System Architecture
 

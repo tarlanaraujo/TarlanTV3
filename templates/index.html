@@ -1,18 +1,44 @@
 {% extends "base.html" %}
 
-{% block title %}Início - IPTV Manager{% endblock %}
+{% block title %}TarTV - Plataforma de Streaming IPTV{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<div class="hero-section mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 0; border-radius: 15px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-tv me-3"></i>
+                    TarTV
+                </h1>
+                <p class="lead mb-4">
+                    Plataforma completa de streaming IPTV. Organize, valide e assista suas listas M3U com facilidade e qualidade profissional.
+                </p>
+                <div class="mb-4">
+                    <span class="badge bg-light text-dark me-2 fs-6">
+                        <i class="fas fa-film me-1"></i>Filmes
+                    </span>
+                    <span class="badge bg-light text-dark me-2 fs-6">
+                        <i class="fas fa-tv me-1"></i>Séries
+                    </span>
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="fas fa-broadcast-tower me-1"></i>TV Ao Vivo
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-satellite-dish" style="font-size: 8rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="text-center mb-5">
-            <h1 class="display-4">
-                <i class="fas fa-tv text-primary me-3"></i>
-                IPTV Manager
-            </h1>
-            <p class="lead text-muted">
-                Visualizador profissional de listas M3U com categorização automática
-            </p>
+            <h2 class="h3 mb-4">Carregue Sua Lista M3U</h2>
+            <p class="text-muted">Escolha como deseja adicionar sua lista IPTV</p>
         </div>
         
         <div class="row justify-content-center">
@@ -90,43 +116,141 @@
             </div>
         </div>
         
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <h3 class="mb-5">Recursos do TarTV</h3>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-layer-group fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Organização Automática</h5>
+                        <p class="card-text text-muted">
+                            Sistema inteligente que organiza automaticamente sua lista em Filmes, Séries e Canais Ao Vivo
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-search fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Busca Inteligente</h5>
+                        <p class="card-text text-muted">
+                            Encontre rapidamente qualquer conteúdo com busca em tempo real e filtros avançados
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-play-circle fa-3x text-info"></i>
+                        </div>
+                        <h5 class="card-title">Player Profissional</h5>
+                        <p class="card-text text-muted">
+                            Reprodução direta no navegador com controles completos e suporte HLS
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-film fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Coleção de Filmes</h5>
+                        <p class="card-text text-muted">
+                            Interface moderna para navegar seus filmes com posters e informações detalhadas
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-tv fa-3x text-danger"></i>
+                        </div>
+                        <h5 class="card-title">Séries Organizadas</h5>
+                        <p class="card-text text-muted">
+                            Gerencie suas séries favoritas com navegação intuitiva e fácil acesso
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-broadcast-tower fa-3x text-secondary"></i>
+                        </div>
+                        <h5 class="card-title">TV Ao Vivo</h5>
+                        <p class="card-text text-muted">
+                            Acesse canais de TV ao vivo com teste de conectividade e organização por categoria
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- How to Use Section -->
         <div class="row mt-5">
             <div class="col-12">
-                <div class="text-center">
-                    <h3>Recursos</h3>
-                    <div class="row mt-4">
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-layer-group fa-3x text-primary mb-3"></i>
-                                    <h5>Categorização Automática</h5>
-                                    <p class="text-muted">
-                                        Organiza automaticamente em Filmes, Séries e Canais Ao Vivo
-                                    </p>
-                                </div>
+                <div class="text-center mb-5">
+                    <h3>Como Usar</h3>
+                    <p class="text-muted">Simples e rápido em 4 passos</p>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-center">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-upload fa-lg"></i>
                             </div>
+                            <h5>1. Carregar Lista</h5>
+                            <p class="text-muted">Faça upload do arquivo M3U ou cole a URL da sua lista IPTV</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-search fa-3x text-success mb-3"></i>
-                                    <h5>Busca Avançada</h5>
-                                    <p class="text-muted">
-                                        Sistema de busca em tempo real com filtros por categoria
-                                    </p>
-                                </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-center">
+                            <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-cogs fa-lg"></i>
                             </div>
+                            <h5>2. Processar</h5>
+                            <p class="text-muted">O sistema organiza automaticamente por categoria</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-play-circle fa-3x text-info mb-3"></i>
-                                    <h5>Player Integrado</h5>
-                                    <p class="text-muted">
-                                        Reprodução direta no navegador com interface otimizada
-                                    </p>
-                                </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-center">
+                            <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-search fa-lg"></i>
                             </div>
+                            <h5>3. Explorar</h5>
+                            <p class="text-muted">Navegue pelo conteúdo com busca e filtros</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-center">
+                            <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-play fa-lg"></i>
+                            </div>
+                            <h5>4. Assistir</h5>
+                            <p class="text-muted">Reproduza diretamente no navegador</p>
                         </div>
                     </div>
                 </div>
