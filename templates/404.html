@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Página Não Encontrada - TarTV{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="text-center">
+            <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+            <h1 class="h2 mb-3">Página Não Encontrada</h1>
+            <p class="text-muted mb-4">
+                A página que você está procurando não foi encontrada.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Voltar ao Início
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
