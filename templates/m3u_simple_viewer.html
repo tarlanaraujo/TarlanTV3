@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}{{ playlist_name }} - TarTV{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-1">
+                        <i class="fas fa-list-ul text-primary me-2"></i>
+                        {{ playlist_name }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-clock me-1"></i>
+                        Carregado em {{ upload_date }}
+                    </p>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-success me-2" onclick="exportToHTML()">
+                        <i class="fas fa-download me-1"></i>
+                        Exportar HTML
+                    </button>
+                    <span class="badge bg-primary fs-6">
+                        {{ total_channels }} canais
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Buscar canais, filmes ou séries...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">Todas as categorias</option>
+                                <option value="live">Canais AO VIVO</option>
+                                <option value="movie">Filmes</option>
+                                <option value="series">Séries</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="categoryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" 
+                            data-bs-target="#all-content" type="button" role="tab">
+                        <i class="fas fa-th-large me-1"></i>
+                        Todos <span class="badge bg-secondary ms-1">{{ total_channels }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="live-tab" data-bs-toggle="tab" 
+                            data-bs-target="#live-content" type="button" role="tab">
+                        <i class="fas fa-broadcast-tower me-1"></i>
+                        AO VIVO <span class="badge bg-danger ms-1">{{ live_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="movie-tab" data-bs-toggle="tab" 
+                            data-bs-target="#movie-content" type="button" role="tab">
+                        <i class="fas fa-film me-1"></i>
+                        Filmes <span class="badge bg-warning ms-1">{{ movie_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="series-tab" data-bs-toggle="tab" 
+                            data-bs-target="#series-content" type="button" role="tab">
+                        <i class="fas fa-tv me-1"></i>
+                        Séries <span class="badge bg-info ms-1">{{ series_count }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="tab-content" id="categoryTabsContent">
+                <div class="tab-pane fade show active" id="all-content" role="tabpanel">
+                    <div id="all-channels" class="row">
+                        <!-- Channels will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="live-content" role="tabpanel">
+                    <div id="live-channels" class="row">
+                        <!-- Live channels will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="movie-content" role="tabpanel">
+                    <div id="movie-channels" class="row">
+                        <!-- Movie channels will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="series-content" role="tabpanel">
+                    <div id="series-channels" class="row">
+                        <!-- Series channels will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Channel data -->
+<script>
+const channelsData = {{ channels_json|safe }};
+let filteredChannels = channelsData;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    displayChannels();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function() {
+        filterChannels();
+    });
+    
+    // Category filter
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        filterChannels();
+    });
+    
+    // Tab switching
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (e) {
+            displayChannels();
+        });
+    });
+}
+
+function filterChannels() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    
+    filteredChannels = channelsData.filter(channel => {
+        const matchesSearch = channel.name.toLowerCase().includes(searchTerm) ||
+                             (channel.group_title && channel.group_title.toLowerCase().includes(searchTerm));
+        const matchesCategory = !categoryFilter || channel.category_type === categoryFilter;
+        
+        return matchesSearch && matchesCategory;
+    });
+    
+    displayChannels();
+}
+
+function displayChannels() {
+    const activeTab = document.querySelector('.nav-link.active').id;
+    let channelsToShow = filteredChannels;
+    
+    // Filter by active tab
+    if (activeTab === 'live-tab') {
+        channelsToShow = filteredChannels.filter(ch => ch.category_type === 'live');
+    } else if (activeTab === 'movie-tab') {
+        channelsToShow = filteredChannels.filter(ch => ch.category_type === 'movie');
+    } else if (activeTab === 'series-tab') {
+        channelsToShow = filteredChannels.filter(ch => ch.category_type === 'series');
+    }
+    
+    // Get container
+    const containerId = activeTab.replace('-tab', '-channels');
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Display channels
+    channelsToShow.forEach(channel => {
+        const channelCard = createChannelCard(channel);
+        container.appendChild(channelCard);
+    });
+    
+    // Show no results message if empty
+    if (channelsToShow.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Nenhum canal encontrado</h4>
+                    <p class="text-muted">Tente buscar por outro termo</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function createChannelCard(channel) {
+    const col = document.createElement('div');
+    col.className = 'col-lg-3 col-md-4 col-sm-6 mb-4';
+    
+    const categoryClass = channel.category_type === 'live' ? 'border-danger' : 
+                         channel.category_type === 'movie' ? 'border-warning' : 'border-info';
+    
+    const categoryIcon = channel.category_type === 'live' ? 'broadcast-tower' : 
+                        channel.category_type === 'movie' ? 'film' : 'tv';
+    
+    const categoryColor = channel.category_type === 'live' ? 'danger' : 
+                         channel.category_type === 'movie' ? 'warning' : 'info';
+    
+    col.innerHTML = `
+        <div class="card h-100 ${categoryClass}">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        ${channel.logo ? 
+                            `<img src="${channel.logo}" class="rounded" width="60" height="60" alt="Logo" onerror="this.style.display='none'">` :
+                            `<div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-${categoryIcon} text-white"></i>
+                             </div>`
+                        }
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title mb-1">${channel.name}</h6>
+                        ${channel.group_title ? 
+                            `<p class="text-muted small mb-2">
+                                <i class="fas fa-folder me-1"></i>${channel.group_title}
+                             </p>` : ''
+                        }
+                        <span class="badge bg-${categoryColor} mb-2">
+                            ${channel.category_type === 'live' ? 'AO VIVO' : 
+                              channel.category_type === 'movie' ? 'FILME' : 'SÉRIE'}
+                        </span>
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="openChannel('${channel.url}', '${channel.name}')">
+                        <i class="fas fa-play me-1"></i>
+                        Assistir
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return col;
+}
+
+function openChannel(url, name) {
+    // Open in new tab/window
+    window.open(url, '_blank');
+}
+
+function exportToHTML() {
+    const htmlContent = generateExportHTML();
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '{{ playlist_name }}_export.html';
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
+function generateExportHTML() {
+    const liveChannels = channelsData.filter(ch => ch.category_type === 'live');
+    const movieChannels = channelsData.filter(ch => ch.category_type === 'movie');
+    const seriesChannels = channelsData.filter(ch => ch.category_type === 'series');
+    
+    let html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ playlist_name }} - TarTV Export</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .category { margin-bottom: 40px; }
+        .category-header { background: #343a40; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .channels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .channel-card { background: #2a2a2a; padding: 15px; border-radius: 8px; }
+        .channel-name { font-weight: bold; margin-bottom: 5px; }
+        .channel-info { font-size: 12px; color: #aaa; margin-bottom: 10px; }
+        .channel-url { word-break: break-all; font-size: 11px; color: #17a2b8; }
+        .live { border-left: 4px solid #dc3545; }
+        .movie { border-left: 4px solid #ffc107; }
+        .series { border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ playlist_name }}</h1>
+        <p>Exportado em ${new Date().toLocaleDateString('pt-BR')}</p>
+        <p>Total: ${channelsData.length} canais | AO VIVO: ${liveChannels.length} | Filmes: ${movieChannels.length} | Séries: ${seriesChannels.length}</p>
+    </div>`;
+    
+    // Add each category
+    [
+        { name: 'Canais AO VIVO', channels: liveChannels, class: 'live' },
+        { name: 'Filmes', channels: movieChannels, class: 'movie' },
+        { name: 'Séries', channels: seriesChannels, class: 'series' }
+    ].forEach(category => {
+        if (category.channels.length > 0) {
+            html += `
+            <div class="category">
+                <div class="category-header">
+                    <h2>${category.name} (${category.channels.length})</h2>
+                </div>
+                <div class="channels-grid">`;
+            
+            category.channels.forEach(channel => {
+                html += `
+                <div class="channel-card ${category.class}">
+                    <div class="channel-name">${channel.name}</div>
+                    <div class="channel-info">${channel.group_title || 'Sem grupo'}</div>
+                    <div class="channel-url"><a href="${channel.url}" target="_blank">${channel.url}</a></div>
+                </div>`;
+            });
+            
+            html += `</div></div>`;
+        }
+    });
+    
+    html += `
+    <div style="text-align: center; margin-top: 50px; color: #666;">
+        <p>Exportado pelo TarTV - Gerenciador de IPTV</p>
+    </div>
+</body>
+</html>`;
+    
+    return html;
+}
+</script>
+{% endblock %}

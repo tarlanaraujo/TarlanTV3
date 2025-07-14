@@ -81,31 +81,64 @@ def upload_m3u():
         if existing_playlist:
             return redirect(url_for('view_playlist', playlist_id=existing_playlist.id))
         
-        # Create new playlist
-        playlist = M3UPlaylist(
-            name=playlist_name,
-            source_url=source_url,
-            source_type=source_type,
-            content_hash=content_hash,
-            status='processing'
-        )
-        db.session.add(playlist)
-        db.session.commit()
+        # Process M3U content directly without database
+        validator = M3UValidator()
+        channels_data = validator.parse_m3u_content(content)
         
-        # Store playlist ID in session
-        session['current_playlist_id'] = playlist.id
+        # Store in session for quick access
+        session['current_m3u_data'] = {
+            'name': playlist_name,
+            'source_url': source_url,
+            'source_type': source_type,
+            'content_hash': content_hash,
+            'channels': channels_data,
+            'upload_date': datetime.now().strftime('%d/%m/%Y %H:%M')
+        }
         
-        # Start background processing
-        thread = threading.Thread(target=process_m3u_content, args=(playlist.id, content))
-        thread.daemon = True
-        thread.start()
-        
-        return redirect(url_for('playlist_loading', playlist_id=playlist.id))
+        return redirect(url_for('simple_m3u_viewer'))
         
     except Exception as e:
         app.logger.error(f"Error processing M3U: {e}")
         flash(f'Erro ao processar M3U: {str(e)}', 'error')
         return redirect(url_for('index'))
+
+@app.route('/m3u/viewer')
+def simple_m3u_viewer():
+    """Simple M3U viewer without database storage"""
+    m3u_data = session.get('current_m3u_data')
+    if not m3u_data:
+        flash('Nenhuma playlist carregada', 'error')
+        return redirect(url_for('index'))
+    
+    # Categorize channels quickly
+    channels = m3u_data['channels']
+    live_channels = []
+    movie_channels = []
+    series_channels = []
+    
+    for channel in channels:
+        category_type = categorize_channel_simple(channel['name'], channel.get('group', ''))
+        channel['category_type'] = category_type
+        
+        if category_type == 'live':
+            live_channels.append(channel)
+        elif category_type == 'movie':
+            movie_channels.append(channel)
+        else:
+            series_channels.append(channel)
+    
+    # Convert to JSON for JavaScript
+    import json
+    channels_json = json.dumps(channels, ensure_ascii=False)
+    
+    return render_template('m3u_simple_viewer.html',
+                         playlist_name=m3u_data['name'],
+                         upload_date=m3u_data['upload_date'],
+                         total_channels=len(channels),
+                         live_count=len(live_channels),
+                         movie_count=len(movie_channels),
+                         series_count=len(series_channels),
+                         channels_json=channels_json)
 
 @app.route('/playlist/<int:playlist_id>/loading')
 def playlist_loading(playlist_id):
@@ -483,6 +516,30 @@ def process_m3u_content(playlist_id, content):
             if playlist:
                 playlist.status = 'failed'
                 db.session.commit()
+
+def categorize_channel_simple(name, group_title):
+    """Simple categorization for quick processing"""
+    name_lower = name.lower()
+    group_lower = group_title.lower() if group_title else ''
+    
+    # Movie indicators
+    movie_keywords = ['filme', 'movie', 'cinema', 'vod', 'on demand', 'peliculas']
+    series_keywords = ['serie', 'series', 'tv show', 'temporada', 'season', 'episodio']
+    
+    # Check group title first (more reliable)
+    if any(keyword in group_lower for keyword in movie_keywords):
+        return 'movie'
+    elif any(keyword in group_lower for keyword in series_keywords):
+        return 'series'
+    
+    # Check channel name
+    if any(keyword in name_lower for keyword in movie_keywords):
+        return 'movie'
+    elif any(keyword in name_lower for keyword in series_keywords):
+        return 'series'
+    
+    # Default to live TV
+    return 'live'
 
 def categorize_channel(name, group_title):
     """Automatically categorize channel based on name and group"""
