@@ -1,20 +1,4 @@
 from flask import render_template, request, jsonify, redirect, url_for, flash, session, send_file
-
-@app.route('/canal/player')
-def canal_player():
-    """Render the canal player page"""
-    return render_template('canal_player.html')
-
-@app.route('/api/player/testar', methods=['POST'])
-def api_testar_player():
-    """API to test player with a given channel URL"""
-    data = request.get_json()
-    canal_url = data.get('url')
-
-    if not canal_url:
-        return jsonify({ 'erro': 'URL do canal não fornecida' }), 400
-
-    return jsonify({ 'url': canal_url })
 from app import app, db
 from models import M3UPlaylist, Channel, SearchHistory, UserSession
 from m3u_validator import M3UValidator
