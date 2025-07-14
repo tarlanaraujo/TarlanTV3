@@ -14,7 +14,17 @@ class M3UValidator:
     def fetch_m3u_content(self, url):
         """Fetch M3U content from URL"""
         try:
-            response = self.session.get(url, timeout=30)
+            # Set headers to mimic a real browser
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/vnd.apple.mpegurl, application/x-mpegurl, audio/mpegurl, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1'
+            }
+            
+            response = self.session.get(url, headers=headers, timeout=30, allow_redirects=True)
             response.raise_for_status()
             
             # Try to decode with different encodings
@@ -26,7 +36,12 @@ class M3UValidator:
                 except UnicodeDecodeError:
                     content = response.content.decode('utf-8', errors='ignore')
             
-            return content if '#EXTM3U' in content else None
+            # Check if it's M3U content
+            if '#EXTM3U' in content or '#EXTINF:' in content:
+                return content
+            else:
+                print(f"Content doesn't appear to be M3U format")
+                return None
             
         except requests.RequestException as e:
             print(f"Error fetching M3U content: {e}")
