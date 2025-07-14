@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Resultados da busca - {{ playlist.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}">
+                                {{ playlist.name }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <i class="fas fa-search me-1"></i>Resultados da busca
+                        </li>
+                    </ol>
+                </nav>
+                
+                <h1>
+                    <i class="fas fa-search me-2"></i>
+                    Resultados para "{{ query }}"
+                </h1>
+                
+                <p class="text-muted">
+                    {% if category_type != 'all' %}
+                        Categoria: 
+                        {% if category_type == 'live' %}Canais Ao Vivo
+                        {% elif category_type == 'movie' %}Filmes
+                        {% else %}Séries
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="text-end">
+                <span class="badge bg-primary fs-6">
+                    {{ results_count }} resultado{{ 's' if results_count != 1 }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Search Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('search_channels', playlist_id=playlist.id) }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="q" 
+                                       placeholder="Buscar canais..." value="{{ query }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="category">
+                                <option value="all">Todas as categorias</option>
+                                <option value="live" {% if category_type == 'live' %}selected{% endif %}>Ao Vivo</option>
+                                <option value="movie" {% if category_type == 'movie' %}selected{% endif %}>Filmes</option>
+                                <option value="series" {% if category_type == 'series' %}selected{% endif %}>Séries</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        {% if channels %}
+            <div class="row">
+                {% for channel in channels %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card channel-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        {% if channel.logo %}
+                                            <img src="{{ channel.logo }}" class="channel-logo" alt="Logo">
+                                        {% else %}
+                                            <div class="channel-logo-placeholder">
+                                                {% if channel.category_type == 'live' %}
+                                                    <i class="fas fa-broadcast-tower"></i>
+                                                {% elif channel.category_type == 'movie' %}
+                                                    <i class="fas fa-film"></i>
+                                                {% else %}
+                                                    <i class="fas fa-tv"></i>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="channel-name">{{ channel.name }}</h6>
+                                        
+                                        <div class="channel-type mb-2">
+                                            {% if channel.category_type == 'live' %}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-broadcast-tower me-1"></i>Ao Vivo
+                                                </span>
+                                            {% elif channel.category_type == 'movie' %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-film me-1"></i>Filme
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-tv me-1"></i>Série
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {% if channel.group_title %}
+                                            <div class="channel-group">
+                                                <i class="fas fa-folder me-1"></i>
+                                                <small class="text-muted">{{ channel.group_title }}</small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="channel-status mt-2">
+                                            {% if channel.is_working == True %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Funcionando
+                                                </span>
+                                            {% elif channel.is_working == False %}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times-circle me-1"></i>Offline
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-question-circle me-1"></i>Não testado
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="channel-actions mt-3">
+                                    <a href="{{ url_for('play_channel', playlist_id=playlist.id, channel_id=channel.id) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-play me-1"></i>
+                                        Assistir
+                                    </a>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                            onclick="testChannel({{ channel.id }})">
+                                        <i class="fas fa-flask me-1"></i>
+                                        Testar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Nenhum resultado encontrado</h4>
+                <p class="text-muted">Tente buscar por outro termo ou categoria</p>
+                <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Voltar à playlist
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function testChannel(channelId) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testando...';
+    
+    fetch(`/api/channel/${channelId}/test`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            // Poll for status
+            setTimeout(() => {
+                fetch(`/api/channel/${channelId}/status`)
+                    .then(response => response.json())
+                    .then(status => {
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                        
+                        // Update status badge
+                        const statusBadge = button.closest('.card').querySelector('.channel-status .badge');
+                        if (status.is_working === true) {
+                            statusBadge.className = 'badge bg-success';
+                            statusBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i>Funcionando';
+                        } else if (status.is_working === false) {
+                            statusBadge.className = 'badge bg-danger';
+                            statusBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i>Offline';
+                        }
+                    });
+            }, 2000);
+        })
+        .catch(error => {
+            button.disabled = false;
+            button.innerHTML = originalText;
+            console.error('Error testing channel:', error);
+        });
+}
+</script>
+{% endblock %}

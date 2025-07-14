@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar Listas IPTV{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-search me-2"></i>Buscar Lista IPTV
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL da Lista M3U</label>
+                        <input type="url" class="form-control" id="url" name="url" required 
+                               placeholder="https://exemplo.com/lista.m3u ou https://site.com/pagina-com-lista">
+                        <div class="form-text">
+                            Insira a URL de uma lista M3U/M3U8 ou de uma página que contenha links para listas IPTV
+                        </div>
+                        <div class="invalid-feedback">
+                            Por favor, insira uma URL válida.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Dica:</strong> Você pode inserir tanto URLs diretas de arquivos M3U quanto páginas web que contenham listas IPTV.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Buscar e Validar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Como Funciona
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-step-forward me-2"></i>Processo de Busca</h6>
+                        <ol>
+                            <li>Insira a URL da lista M3U ou página web</li>
+                            <li>O sistema baixa e analisa o conteúdo</li>
+                            <li>Canais são extraídos e categorizados</li>
+                            <li>Cada canal é testado para conectividade</li>
+                            <li>Resultados são organizados por categoria</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tags me-2"></i>Categorização Automática</h6>
+                        <ul>
+                            <li><span class="badge bg-danger me-2">Esportes</span> ESPN, SporTV, Fox Sports</li>
+                            <li><span class="badge bg-info me-2">Notícias</span> CNN, Globo News, Band News</li>
+                            <li><span class="badge bg-success me-2">Filmes</span> HBO, Telecine, Cinema</li>
+                            <li><span class="badge bg-warning me-2">Infantil</span> Disney, Cartoon, Nickelodeon</li>
+                            <li><span class="badge bg-secondary me-2">Geral</span> Outros canais</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

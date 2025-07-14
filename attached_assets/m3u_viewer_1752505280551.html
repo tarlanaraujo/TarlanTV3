@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navegador de Filmes M3U</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .movie-card {
+            height: 400px;
+            border: 1px solid var(--bs-gray-700);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--bs-dark);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .movie-poster {
+            height: 250px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-poster .no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .movie-info {
+            padding: 1rem;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .movie-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .movie-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .category-filter {
+            background: var(--bs-gray-800);
+            border: 1px solid var(--bs-gray-600);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--bs-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-filter:hover, .category-filter.active {
+            background: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+
+        .search-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bs-dark);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--bs-gray-700);
+        }
+
+        .stats-container {
+            background: var(--bs-gray-900);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--bs-gray-400);
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="search-container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-film me-2"></i>
+                            Navegador de Filmes M3U
+                        </h1>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" onclick="toggleGridView()">
+                                <i class="fas fa-th" id="view-icon"></i>
+                            </button>
+                            <button class="btn btn-outline-success" onclick="exportM3U()">
+                                <i class="fas fa-download me-2"></i>Exportar M3U
+                            </button>
+                            <button class="btn btn-outline-info" onclick="downloadHTML()">
+                                <i class="fas fa-code me-2"></i>Baixar HTML
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="importM3U()">
+                                <i class="fas fa-upload me-2"></i>Importar M3U
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Buscar filmes..." onkeyup="filterMovies()">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <select class="form-select" id="categoryFilter" onchange="filterMovies()">
+                                <option value="">Todas as Categorias</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="stats-container">
+                        <div class="row text-center">
+                            <div class="col-6 col-md-3">
+                                <div class="h4 mb-0 text-primary" id="totalMovies">0</div>
+                                <small class="text-muted">Total de Filmes</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="h4 mb-0 text-success" id="visibleMovies">0</div>
+                                <small class="text-muted">Filmes Visíveis</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="h4 mb-0 text-info" id="totalCategories">0</div>
+                                <small class="text-muted">Categorias</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="h4 mb-0 text-warning" id="loadingProgress">0%</div>
+                                <small class="text-muted">Carregamento</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <div class="mt-2">Carregando filmes...</div>
+        </div>
+
+        <div class="movie-grid" id="movieGrid" style="display: none;">
+            <!-- Movies will be dynamically loaded here -->
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h4>Nenhum filme encontrado</h4>
+            <p>Tente ajustar os filtros de busca ou categoria</p>
+        </div>
+    </div>
+
+    <!-- Modal para exibir detalhes do filme -->
+    <div class="modal fade" id="movieModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img id="modalPoster" class="img-fluid rounded" style="width: 100%;">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <strong>Categoria:</strong> <span id="modalCategory"></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>URL do Filme:</strong>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="modalUrl" readonly>
+                                    <button class="btn btn-outline-primary" onclick="copyUrl()">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a id="modalPlayButton" class="btn btn-success" target="_blank">
+                                    <i class="fas fa-play me-2"></i>Reproduzir
+                                </a>
+                                <button class="btn btn-primary" onclick="downloadMovie()">
+                                    <i class="fas fa-download me-2"></i>Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Importar M3U -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Importar Lista M3U</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="importFile" class="form-label">Selecione um arquivo M3U:</label>
+                        <input type="file" class="form-control" id="importFile" accept=".m3u,.m3u8,.txt">
+                    </div>
+                    <div class="mb-3">
+                        <label for="importUrl" class="form-label">Ou cole uma URL M3U:</label>
+                        <input type="url" class="form-control" id="importUrl" placeholder="https://exemplo.com/lista.m3u">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>A nova lista substituirá o conteúdo atual da demo.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="processImport()">Importar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let allMovies = [];
+        let filteredMovies = [];
+        let categories = new Set();
+        let currentGridView = 'grid';
+
+        // M3U content will be loaded here
+        const m3uContent = `{{ m3u_content | safe }}`;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            parseM3UContent();
+            setupEventListeners();
+        });
+
+        function parseM3UContent() {
+            const lines = m3uContent.split('\n');
+            let currentMovie = null;
+            let processed = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line.startsWith('#EXTINF:')) {
+                    currentMovie = parseExtinf(line);
+                } else if (line && !line.startsWith('#') && currentMovie) {
+                    currentMovie.url = line;
+                    allMovies.push(currentMovie);
+                    categories.add(currentMovie.category || 'Sem Categoria');
+                    currentMovie = null;
+                }
+
+                // Update progress
+                processed++;
+                const progress = Math.round((processed / lines.length) * 100);
+                document.getElementById('loadingProgress').textContent = progress + '%';
+            }
+
+            filteredMovies = [...allMovies];
+            updateUI();
+            hideLoading();
+        }
+
+        function parseExtinf(line) {
+            const movie = {
+                name: '',
+                logo: '',
+                category: '',
+                url: ''
+            };
+
+            // Extract name (after last comma)
+            const nameMatch = line.match(/,(.+)$/);
+            if (nameMatch) {
+                movie.name = nameMatch[1].trim();
+            }
+
+            // Extract logo
+            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+            if (logoMatch) {
+                movie.logo = logoMatch[1];
+            }
+
+            // Extract category
+            const categoryMatch = line.match(/group-title="([^"]+)"/);
+            if (categoryMatch) {
+                movie.category = categoryMatch[1];
+            }
+
+            return movie;
+        }
+
+        function updateUI() {
+            updateStats();
+            updateCategoryFilter();
+            renderMovies();
+        }
+
+        function updateStats() {
+            document.getElementById('totalMovies').textContent = allMovies.length;
+            document.getElementById('visibleMovies').textContent = filteredMovies.length;
+            document.getElementById('totalCategories').textContent = categories.size;
+            document.getElementById('loadingProgress').textContent = '100%';
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="">Todas as Categorias</option>';
+
+            Array.from(categories).sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function renderMovies() {
+            const movieGrid = document.getElementById('movieGrid');
+            const noResults = document.getElementById('noResults');
+
+            if (filteredMovies.length === 0) {
+                movieGrid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            movieGrid.style.display = 'grid';
+            noResults.style.display = 'none';
+            movieGrid.innerHTML = '';
+
+            filteredMovies.forEach((movie, index) => {
+                const movieCard = createMovieCard(movie, index);
+                movieGrid.appendChild(movieCard);
+            });
+        }
+
+        function createMovieCard(movie, index) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.innerHTML = `
+                <div class="movie-poster">
+                    ${movie.logo ? 
+                        `<img src="${movie.logo}" alt="${movie.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="no-image" style="display: none;">
+                             <i class="fas fa-film"></i>
+                         </div>` :
+                        `<div class="no-image">
+                             <i class="fas fa-film"></i>
+                         </div>`
+                    }
+                    <div class="category-badge">${movie.category || 'Sem Categoria'}</div>
+                </div>
+                <div class="movie-info">
+                    <div class="movie-title">${movie.name}</div>
+                    <div class="movie-actions">
+                        <button class="btn btn-sm btn-primary" onclick="showMovieDetails(${index})">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="playMovie('${movie.url}')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyMovieUrl('${movie.url}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function filterMovies() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            filteredMovies = allMovies.filter(movie => {
+                const matchesSearch = movie.name.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || movie.category === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+
+            renderMovies();
+            updateStats();
+        }
+
+        function showMovieDetails(index) {
+            const movie = filteredMovies[index];
+            document.getElementById('modalTitle').textContent = movie.name;
+            document.getElementById('modalCategory').textContent = movie.category || 'Sem Categoria';
+            document.getElementById('modalUrl').value = movie.url;
+            document.getElementById('modalPlayButton').href = movie.url;
+
+            if (movie.logo) {
+                document.getElementById('modalPoster').src = movie.logo;
+            }
+
+            new bootstrap.Modal(document.getElementById('movieModal')).show();
+        }
+
+        function playMovie(url) {
+            window.open(url, '_blank');
+        }
+
+        function copyMovieUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('URL copiada!', 'A URL do filme foi copiada para a área de transferência.');
+            });
+        }
+
+        function copyUrl() {
+            const urlInput = document.getElementById('modalUrl');
+            urlInput.select();
+            document.execCommand('copy');
+            showToast('URL copiada!', 'A URL foi copiada para a área de transferência.');
+        }
+
+        function downloadMovie() {
+            const url = document.getElementById('modalUrl').value;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';
+            a.click();
+        }
+
+        function exportM3U() {
+            const m3uContent = generateM3UContent();
+            const blob = new Blob([m3uContent], { type: 'application/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'filmes_' + new Date().toISOString().split('T')[0] + '.m3u';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadHTML() {
+            // Create URL with M3U content as parameter
+            const downloadUrl = '/download_html?content=' + encodeURIComponent(m3uContent);
+            window.location.href = downloadUrl;
+        }
+
+        function generateM3UContent() {
+            let content = '#EXTM3U\n';
+            filteredMovies.forEach(movie => {
+                content += `#EXTINF:-1 tvg-name="${movie.name}"`;
+                if (movie.logo) content += ` tvg-logo="${movie.logo}"`;
+                if (movie.category) content += ` group-title="${movie.category}"`;
+                content += `,${movie.name}\n`;
+                content += `${movie.url}\n`;
+            });
+            return content;
+        }
+
+        function toggleGridView() {
+            const movieGrid = document.getElementById('movieGrid');
+            const viewIcon = document.getElementById('view-icon');
+
+            if (currentGridView === 'grid') {
+                movieGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+                viewIcon.className = 'fas fa-list';
+                currentGridView = 'compact';
+            } else {
+                movieGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+                viewIcon.className = 'fas fa-th';
+                currentGridView = 'grid';
+            }
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('movieGrid').style.display = 'grid';
+        }
+
+        function setupEventListeners() {
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+            });
+        }
+
+        function showToast(title, message) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--bs-success);
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function importM3U() {
+            const modal = new bootstrap.Modal(document.getElementById('importModal'));
+            modal.show();
+        }
+
+        function processImport() {
+            const fileInput = document.getElementById('importFile');
+            const urlInput = document.getElementById('importUrl');
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    parseAndUpdateM3U(content);
+                };
+                reader.readAsText(file);
+            } else if (urlInput.value.trim()) {
+                // Use proxy to avoid CORS issues
+                fetch(`/proxy_m3u?url=${encodeURIComponent(urlInput.value)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            parseAndUpdateM3U(data.content);
+                        } else {
+                            alert('Erro ao carregar URL: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro ao carregar URL: ' + error.message);
+                    });
+            } else {
+                alert('Por favor, selecione um arquivo ou insira uma URL.');
+                return;
+            }
+
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+            modal.hide();
+        }
+
+        function parseM3U(content) {
+            const movies = [];
+            const lines = content.split('\n');
+            let currentMovie = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line.startsWith('#EXTINF:')) {
+                    currentMovie = parseExtinf(line);
+                } else if (line && !line.startsWith('#') && currentMovie) {
+                    currentMovie.url = line;
+                    movies.push(currentMovie);
+                    currentMovie = null;
+                }
+            }
+
+            return movies;
+        }
+
+        function parseAndUpdateM3U(content) {
+            try {
+                const newMovies = parseM3U(content);
+                if (newMovies.length > 0) {
+                    allMovies = newMovies;
+                    filteredMovies = [...allMovies];
+                    
+                    // Atualizar categorias
+                    categories = new Set();
+                    allMovies.forEach(movie => {
+                        categories.add(movie.category || 'Sem Categoria');
+                    });
+                    
+                    updateUI();
+
+                    // Resetar filtros
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('categoryFilter').value = '';
+
+                    alert(`Lista importada com sucesso! ${allMovies.length} filmes carregados.`);
+                } else {
+                    alert('Nenhum filme encontrado na lista M3U.');
+                }
+            } catch (error) {
+                alert('Erro ao processar arquivo M3U: ' + error.message);
+            }
+        }
+    </script>
+
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</body>
+</html>

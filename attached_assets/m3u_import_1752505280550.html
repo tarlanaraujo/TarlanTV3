@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Importar Lista M3U{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0"><i class="fas fa-link me-2"></i> Importar Lista M3U pelo Link</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="m3u_link" class="form-label">Insira o link da lista M3U</label>
+                        <input type="url" class="form-control" id="m3u_link" name="m3u_link" required>
+                        <div class="invalid-feedback">
+                            Por favor, insira um link válido.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Importar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

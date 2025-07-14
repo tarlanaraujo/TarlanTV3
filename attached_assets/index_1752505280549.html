@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Manager - Gerenciador de Listas M3U</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            border: 1px solid var(--bs-gray-700);
+            border-radius: 12px;
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--bs-dark);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--bs-primary);
+        }
+        
+        .btn-feature {
+            background: var(--bs-primary);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-feature:hover {
+            background: var(--bs-primary);
+            transform: scale(1.05);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-tv me-3"></i>
+                        IPTV Manager
+                    </h1>
+                    <p class="lead mb-4">
+                        Gerencie, valide e visualize suas listas IPTV M3U de forma simples e eficiente.
+                    </p>
+                    <a href="{{ url_for('search') }}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-search me-2"></i>Começar Agora
+                    </a>
+                    <a href="{{ url_for('demo_m3u') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-play me-2"></i>Ver Demo
+                    </a>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <i class="fas fa-satellite-dish" style="font-size: 10rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="h3 mb-4">Funcionalidades Principais</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <!-- Buscar e Validar M3U -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4 class="mb-3">Buscar e Validar</h4>
+                    <p class="text-muted mb-4">
+                        Insira uma URL ou website para buscar e validar listas M3U. Teste automaticamente todos os canais.
+                    </p>
+                    <a href="{{ url_for('search') }}" class="btn-feature">
+                        <i class="fas fa-play me-2"></i>Iniciar Busca
+                    </a>
+                </div>
+            </div>
+
+            <!-- Importar Lista M3U -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h4 class="mb-3">Importar Lista M3U</h4>
+                    <p class="text-muted mb-4">
+                        Importe listas M3U diretamente pelo link e visualize o conteúdo de forma organizada.
+                    </p>
+                    <a href="{{ url_for('m3u_import') }}" class="btn-feature">
+                        <i class="fas fa-link me-2"></i>Importar Link
+                    </a>
+                </div>
+            </div>
+
+            <!-- Upload de Arquivo -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h4 class="mb-3">Upload de Arquivo</h4>
+                    <p class="text-muted mb-4">
+                        Faça upload de arquivos M3U do seu computador e visualize em uma interface navegável.
+                    </p>
+                    <a href="{{ url_for('m3u_viewer_upload') }}" class="btn-feature">
+                        <i class="fas fa-file-upload me-2"></i>Fazer Upload
+                    </a>
+                </div>
+            </div>
+
+            <!-- Visualizador Avançado -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h4 class="mb-3">Visualizador de Filmes</h4>
+                    <p class="text-muted mb-4">
+                        Interface moderna para navegar por filmes com posters, categorias e funcionalidades de busca.
+                    </p>
+                    <a href="{{ url_for('demo_m3u') }}" class="btn-feature">
+                        <i class="fas fa-eye me-2"></i>Ver Demo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Histórico -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h4 class="mb-3">Histórico</h4>
+                    <p class="text-muted mb-4">
+                        Visualize todas as suas buscas anteriores e acesse rapidamente listas já processadas.
+                    </p>
+                    <a href="{{ url_for('history') }}" class="btn-feature">
+                        <i class="fas fa-list me-2"></i>Ver Histórico
+                    </a>
+                </div>
+            </div>
+
+            <!-- Exportar -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h4 class="mb-3">Exportar Listas</h4>
+                    <p class="text-muted mb-4">
+                        Exporte listas filtradas em formato M3U ou HTML para uso offline em outros dispositivos.
+                    </p>
+                    <a href="{{ url_for('search') }}" class="btn-feature">
+                        <i class="fas fa-export me-2"></i>Exportar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-play-circle me-2"></i>
+                            Experimente Agora - Demo com Filmes
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <p class="mb-3">
+                                    Veja como funciona o visualizador de M3U com uma lista de exemplo contendo filmes populares. 
+                                    Interface moderna com posters, categorias, busca e muito mais!
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Visualização em grade com posters</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Busca e filtros por categoria</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Reprodução direta dos filmes</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Download e exportação</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-4 text-center">
+                                <a href="{{ url_for('demo_m3u') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-rocket me-2"></i>Ver Demo Interativa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h3 class="mb-4">Como Usar</h3>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-plus-circle" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>1. Adicione M3U</h5>
+                        <p class="text-muted">Cole uma URL, faça upload de arquivo ou importe por link</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-success mb-3">
+                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>2. Valide</h5>
+                        <p class="text-muted">Teste automaticamente todos os canais para verificar funcionamento</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-info mb-3">
+                            <i class="fas fa-eye" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>3. Visualize</h5>
+                        <p class="text-muted">Navegue pela interface moderna com busca e filtros</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-download" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5>4. Exporte</h5>
+                        <p class="text-muted">Baixe listas filtradas em M3U ou HTML offline</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

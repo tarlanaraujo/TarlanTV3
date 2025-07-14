@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% block title %}Validar Lista IPTV{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>{{ search_entry.title or 'Lista IPTV' }}
+                    </h4>
+                    <small class="text-muted">{{ search_entry.url }}</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshStatus()">
+                        <i class="fas fa-refresh"></i> Atualizar
+                    </button>
+                    {% if search_entry.status == 'completed' %}
+                    <a href="{{ url_for('export_playlist', search_id=search_entry.id) }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-download me-2"></i>Exportar Lista
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tv fa-2x text-primary me-3"></i>
+                            <div>
+                                <h5 class="mb-0" id="channels-found">{{ search_entry.channels_found }}</h5>
+                                <small class="text-muted">Canais Encontrados</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h5 class="mb-0" id="valid-channels">{{ search_entry.valid_channels }}</h5>
+                                <small class="text-muted">Canais Válidos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tags fa-2x text-info me-3"></i>
+                            <div>
+                                <h5 class="mb-0">{{ categories|length }}</h5>
+                                <small class="text-muted">Categorias</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock fa-2x text-warning me-3"></i>
+                            <div>
+                                <h5 class="mb-0">
+                                    <span id="status-badge" class="badge 
+                                        {% if search_entry.status == 'completed' %}bg-success
+                                        {% elif search_entry.status == 'processing' %}bg-warning
+                                        {% else %}bg-danger
+                                        {% endif %}">
+                                        {% if search_entry.status == 'completed' %}Concluído
+                                        {% elif search_entry.status == 'processing' %}Processando
+                                        {% else %}Erro
+                                        {% endif %}
+                                    </span>
+                                </h5>
+                                <small class="text-muted">Status</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if search_entry.status == 'processing' %}
+        <div class="alert alert-info" id="processing-alert">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            Processando lista... Esta página será atualizada automaticamente.
+        </div>
+        {% endif %}
+
+        {% if categories %}
+        <div class="row">
+            {% for category, channels in categories.items() %}
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-folder me-2"></i>{{ category }}
+                            <span class="badge bg-secondary ms-2">{{ channels|length }}</span>
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#category-{{ loop.index }}">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse show" id="category-{{ loop.index }}">
+                        <div class="card-body">
+                            <div class="row">
+                                {% for channel in channels %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title mb-0">{{ channel.name }}</h6>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" onclick="testChannel({{ channel.id }})">
+                                                            <i class="fas fa-play me-2"></i>Testar Canal
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="{{ channel.url }}" target="_blank">
+                                                            <i class="fas fa-external-link-alt me-2"></i>Abrir URL
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-2">
+                                                {% if channel.is_working == True %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Funcionando
+                                                    </span>
+                                                {% elif channel.is_working == False %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Não Funciona
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-clock me-1"></i>Testando
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if channel.logo %}
+                                            <div class="mb-2">
+                                                <img src="{{ channel.logo }}" alt="Logo" class="img-thumbnail" style="max-width: 60px; max-height: 40px;">
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <small class="text-muted">
+                                                {% if channel.last_checked %}
+                                                    Testado em: {{ channel.last_checked.strftime('%d/%m %H:%M') }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-tv fa-4x text-muted mb-3"></i>
+            <h4>Nenhum canal encontrado</h4>
+            <p class="text-muted">Verifique se a URL fornecida contém uma lista M3U válida.</p>
+            <a href="{{ url_for('search') }}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Buscar Novamente
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+var searchId = {{ search_entry.id }};
+
+function refreshStatus() {
+    fetch(`/api/search_status/${searchId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('channels-found').textContent = data.channels_found;
+            document.getElementById('valid-channels').textContent = data.valid_channels;
+            
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = 'badge ' + 
+                (data.status === 'completed' ? 'bg-success' : 
+                 data.status === 'processing' ? 'bg-warning' : 'bg-danger');
+            statusBadge.textContent = 
+                data.status === 'completed' ? 'Concluído' :
+                data.status === 'processing' ? 'Processando' : 'Erro';
+                
+            if (data.status === 'completed') {
+                const processingAlert = document.getElementById('processing-alert');
+                if (processingAlert) {
+                    processingAlert.remove();
+                }
+                // Reload page to show updated channels
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function testChannel(channelId) {
+    fetch(`/api/test_channel/${channelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'testing') {
+                // Show loading state
+                alert('Testando canal... Aguarde alguns segundos e atualize a página.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Auto-refresh if processing
+{% if search_entry.status == 'processing' %}
+setInterval(refreshStatus, 5000);
+{% endif %}
+</script>
+{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Validar Canais{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-check-circle me-2"></i>{{ search_entry.title }}
+                </h4>
+                <div class="mt-2">
+                    <span class="badge bg-info">{{ search_entry.channels_found }} canais encontrados</span>
+                    <span class="badge bg-success">{{ search_entry.valid_channels }} canais válidos</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if search_entry.status == 'processing' %}
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                        <h4>Processando...</h4>
+                        <p>Aguarde enquanto processamos a lista.</p>
+                    </div>
+                {% elif channels %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Categoria</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for channel in channels %}
+                                <tr>
+                                    <td>{{ channel.name }}</td>
+                                    <td>{{ channel.category or 'Sem categoria' }}</td>
+                                    <td>
+                                        {% if channel.is_working %}
+                                            <span class="badge bg-success">Funcionando</span>
+                                        {% elif channel.is_working == False %}
+                                            <span class="badge bg-danger">Não funciona</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Não testado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="testChannel({{ channel.id }})">
+                                            <i class="fas fa-play"></i> Testar
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <h4>Nenhum canal encontrado</h4>
+                    </div>{% extends "base.html" %}
+
+{% block title %}Validar Lista IPTV{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>{{ search_entry.title or 'Lista IPTV' }}
+                    </h4>
+                    <small class="text-muted">{{ search_entry.url }}</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshStatus()">
+                        <i class="fas fa-refresh"></i> Atualizar
+                    </button>
+                    {% if search_entry.status == 'completed' %}
+                    <a href="{{ url_for('export_playlist', search_id=search_entry.id) }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-download me-2"></i>Exportar Lista
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tv fa-2x text-primary me-3"></i>
+                            <div>
+                                <h5 class="mb-0" id="channels-found">{{ search_entry.channels_found }}</h5>
+                                <small class="text-muted">Canais Encontrados</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h5 class="mb-0" id="valid-channels">{{ search_entry.valid_channels }}</h5>
+                                <small class="text-muted">Canais Válidos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tags fa-2x text-info me-3"></i>
+                            <div>
+                                <h5 class="mb-0">{{ categories|length }}</h5>
+                                <small class="text-muted">Categorias</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock fa-2x text-warning me-3"></i>
+                            <div>
+                                <h5 class="mb-0">
+                                    <span id="status-badge" class="badge 
+                                        {% if search_entry.status == 'completed' %}bg-success
+                                        {% elif search_entry.status == 'processing' %}bg-warning
+                                        {% else %}bg-danger
+                                        {% endif %}">
+                                        {% if search_entry.status == 'completed' %}Concluído
+                                        {% elif search_entry.status == 'processing' %}Processando
+                                        {% else %}Erro
+                                        {% endif %}
+                                    </span>
+                                </h5>
+                                <small class="text-muted">Status</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if search_entry.status == 'processing' %}
+        <div class="alert alert-info" id="processing-alert">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            Processando lista... Esta página será atualizada automaticamente.
+        </div>
+        {% endif %}
+
+        {% if categories %}
+        <div class="row">
+            {% for category, channels in categories.items() %}
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-folder me-2"></i>{{ category }}
+                            <span class="badge bg-secondary ms-2">{{ channels|length }}</span>
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#category-{{ loop.index }}">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse show" id="category-{{ loop.index }}">
+                        <div class="card-body">
+                            <div class="row">
+                                {% for channel in channels %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title mb-0">{{ channel.name }}</h6>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" onclick="testChannel({{ channel.id }})">
+                                                            <i class="fas fa-play me-2"></i>Testar Canal
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="{{ channel.url }}" target="_blank">
+                                                            <i class="fas fa-external-link-alt me-2"></i>Abrir URL
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-2">
+                                                {% if channel.is_working == True %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Funcionando
+                                                    </span>
+                                                {% elif channel.is_working == False %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Não Funciona
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-clock me-1"></i>Testando
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if channel.logo %}
+                                            <div class="mb-2">
+                                                <img src="{{ channel.logo }}" alt="Logo" class="img-thumbnail" style="max-width: 60px; max-height: 40px;">
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <small class="text-muted">
+                                                {% if channel.last_checked %}
+                                                    Testado em: {{ channel.last_checked.strftime('%d/%m %H:%M') }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-tv fa-4x text-muted mb-3"></i>
+            <h4>Nenhum canal encontrado</h4>
+            <p class="text-muted">Verifique se a URL fornecida contém uma lista M3U válida.</p>
+            <a href="{{ url_for('search') }}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Buscar Novamente
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+var searchId = {{ search_entry.id }};
+
+function refreshStatus() {
+    fetch(`/api/search_status/${searchId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('channels-found').textContent = data.channels_found;
+            document.getElementById('valid-channels').textContent = data.valid_channels;
+            
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = 'badge ' + 
+                (data.status === 'completed' ? 'bg-success' : 
+                 data.status === 'processing' ? 'bg-warning' : 'bg-danger');
+            statusBadge.textContent = 
+                data.status === 'completed' ? 'Concluído' :
+                data.status === 'processing' ? 'Processando' : 'Erro';
+                
+            if (data.status === 'completed') {
+                const processingAlert = document.getElementById('processing-alert');
+                if (processingAlert) {
+                    processingAlert.remove();
+                }
+                // Reload page to show updated channels
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function testChannel(channelId) {
+    fetch(`/api/test_channel/${channelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'testing') {
+                // Show loading state
+                alert('Testando canal... Aguarde alguns segundos e atualize a página.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Auto-refresh if processing
+{% if search_entry.status == 'processing' %}
+setInterval(refreshStatus, 5000);
+{% endif %}
+</script>
+{% endblock %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testChannel(channelId) {
+    fetch(`/api/channel/${channelId}/test`, {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            console.log('Testing channel:', data);
+            setTimeout(() => location.reload(), 2000);
+        });
+}
+</script>
+{% endblock %}
+</content>

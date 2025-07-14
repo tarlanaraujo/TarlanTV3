@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Início - IPTV Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-5">
+            <h1 class="display-4">
+                <i class="fas fa-tv text-primary me-3"></i>
+                IPTV Manager
+            </h1>
+            <p class="lead text-muted">
+                Visualizador profissional de listas M3U com categorização automática
+            </p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-upload me-2"></i>
+                            Carregar Lista M3U
+                        </h5>
+                        
+                        <ul class="nav nav-tabs" id="sourceTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-pane" type="button" role="tab">
+                                    <i class="fas fa-link me-1"></i>URL
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-pane" type="button" role="tab">
+                                    <i class="fas fa-file me-1"></i>Arquivo
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content mt-3" id="sourceTabsContent">
+                            <!-- URL Tab -->
+                            <div class="tab-pane fade show active" id="url-pane" role="tabpanel">
+                                <form method="POST" action="{{ url_for('upload_m3u') }}">
+                                    <input type="hidden" name="source_type" value="url">
+                                    
+                                    <div class="mb-3">
+                                        <label for="url" class="form-label">URL da Lista M3U</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-link"></i>
+                                            </span>
+                                            <input type="url" class="form-control" id="url" name="url" 
+                                                   placeholder="https://exemplo.com/lista.m3u" required>
+                                        </div>
+                                        <div class="form-text">
+                                            Cole aqui a URL da sua lista M3U ou M3U8
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-download me-2"></i>
+                                        Carregar da URL
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- File Tab -->
+                            <div class="tab-pane fade" id="file-pane" role="tabpanel">
+                                <form method="POST" action="{{ url_for('upload_m3u') }}" enctype="multipart/form-data">
+                                    <input type="hidden" name="source_type" value="file">
+                                    
+                                    <div class="mb-3">
+                                        <label for="file" class="form-label">Arquivo M3U</label>
+                                        <input type="file" class="form-control" id="file" name="file" 
+                                               accept=".m3u,.m3u8,.txt" required>
+                                        <div class="form-text">
+                                            Selecione um arquivo .m3u, .m3u8 ou .txt
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-upload me-2"></i>
+                                        Enviar Arquivo
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="text-center">
+                    <h3>Recursos</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-layer-group fa-3x text-primary mb-3"></i>
+                                    <h5>Categorização Automática</h5>
+                                    <p class="text-muted">
+                                        Organiza automaticamente em Filmes, Séries e Canais Ao Vivo
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-search fa-3x text-success mb-3"></i>
+                                    <h5>Busca Avançada</h5>
+                                    <p class="text-muted">
+                                        Sistema de busca em tempo real com filtros por categoria
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-play-circle fa-3x text-info mb-3"></i>
+                                    <h5>Player Integrado</h5>
+                                    <p class="text-muted">
+                                        Reprodução direta no navegador com interface otimizada
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

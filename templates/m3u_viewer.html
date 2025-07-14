@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ playlist.name }} - IPTV Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>
+                    <i class="fas fa-list me-2"></i>
+                    {{ playlist.name }}
+                </h1>
+                <p class="text-muted mb-0">
+                    {% if playlist.source_url %}
+                        <i class="fas fa-link me-1"></i>
+                        Carregado de URL
+                    {% else %}
+                        <i class="fas fa-file me-1"></i>
+                        Arquivo enviado
+                    {% endif %}
+                    | 
+                    <i class="fas fa-clock me-1"></i>
+                    {{ playlist.last_updated.strftime('%d/%m/%Y %H:%M') if playlist.last_updated else 'Processando...' }}
+                </p>
+            </div>
+            
+            <div class="text-end">
+                <div class="badge bg-primary fs-6 me-2">
+                    <i class="fas fa-tv me-1"></i>
+                    {{ playlist.total_channels }} canais
+                </div>
+                {% if playlist.valid_channels > 0 %}
+                    <div class="badge bg-success fs-6">
+                        <i class="fas fa-check-circle me-1"></i>
+                        {{ playlist.valid_channels }} válidos
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if playlist.status == 'processing' %}
+            <div class="alert alert-info" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <div>
+                        <strong>Processando lista M3U...</strong>
+                        <div class="small">Esta página será atualizada automaticamente</div>
+                    </div>
+                </div>
+            </div>
+        {% elif playlist.status == 'failed' %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Erro ao processar lista M3U</strong>
+                <div class="small">Verifique se o arquivo ou URL está correto</div>
+            </div>
+        {% else %}
+            <!-- Search Form -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('search_channels', playlist_id=playlist.id) }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="q" 
+                                           placeholder="Buscar canais..." value="{{ request.args.get('q', '') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" name="category">
+                                    <option value="all">Todas as categorias</option>
+                                    <option value="live" {% if request.args.get('category') == 'live' %}selected{% endif %}>Ao Vivo</option>
+                                    <option value="movie" {% if request.args.get('category') == 'movie' %}selected{% endif %}>Filmes</option>
+                                    <option value="series" {% if request.args.get('category') == 'series' %}selected{% endif %}>Séries</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-1"></i>
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Category Navigation -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card category-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-broadcast-tower fa-3x text-danger mb-3"></i>
+                            <h5>Canais Ao Vivo</h5>
+                            <p class="text-muted">TV, notícias, esportes e mais</p>
+                            <div class="mb-3">
+                                <span class="badge bg-danger fs-6">{{ live_count }} canais</span>
+                            </div>
+                            <a href="{{ url_for('view_category', playlist_id=playlist.id, category_type='live') }}" 
+                               class="btn btn-outline-danger">
+                                <i class="fas fa-play me-1"></i>
+                                Assistir Ao Vivo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card category-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-film fa-3x text-warning mb-3"></i>
+                            <h5>Filmes</h5>
+                            <p class="text-muted">Cinema e entretenimento</p>
+                            <div class="mb-3">
+                                <span class="badge bg-warning fs-6">{{ movie_count }} filmes</span>
+                            </div>
+                            <a href="{{ url_for('view_category', playlist_id=playlist.id, category_type='movie') }}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-play me-1"></i>
+                                Assistir Filmes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card category-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tv fa-3x text-info mb-3"></i>
+                            <h5>Séries</h5>
+                            <p class="text-muted">Temporadas e episódios</p>
+                            <div class="mb-3">
+                                <span class="badge bg-info fs-6">{{ series_count }} séries</span>
+                            </div>
+                            <a href="{{ url_for('view_category', playlist_id=playlist.id, category_type='series') }}" 
+                               class="btn btn-outline-info">
+                                <i class="fas fa-play me-1"></i>
+                                Assistir Séries
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if playlist.status == 'processing' %}
+<script>
+    // Auto-refresh page while processing
+    setTimeout(() => {
+        location.reload();
+    }, 3000);
+</script>
+{% endif %}
+{% endblock %}

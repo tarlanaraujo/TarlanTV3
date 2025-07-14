@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}{{ channel.name }} - {{ playlist.name }}{% endblock %}
+
+{% block head %}
+<style>
+    .player-container {
+        position: relative;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .player-controls {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .player-container:hover .player-controls {
+        opacity: 1;
+    }
+    
+    .channel-info {
+        background: rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}">
+                        {{ playlist.name }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('view_category', playlist_id=playlist.id, category_type=channel.category_type) }}">
+                        {% if channel.category_type == 'live' %}Canais Ao Vivo
+                        {% elif channel.category_type == 'movie' %}Filmes
+                        {% else %}Séries
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">{{ channel.name }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Channel Header -->
+        <div class="channel-info">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    {% if channel.logo %}
+                        <img src="{{ channel.logo }}" class="rounded" width="60" height="60" alt="Logo">
+                    {% else %}
+                        <div class="bg-primary rounded d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px;">
+                            {% if channel.category_type == 'live' %}
+                                <i class="fas fa-broadcast-tower fa-2x text-white"></i>
+                            {% elif channel.category_type == 'movie' %}
+                                <i class="fas fa-film fa-2x text-white"></i>
+                            {% else %}
+                                <i class="fas fa-tv fa-2x text-white"></i>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h2 class="mb-1">{{ channel.name }}</h2>
+                    <div class="d-flex align-items-center">
+                        {% if channel.category_type == 'live' %}
+                            <span class="badge bg-danger me-2">
+                                <i class="fas fa-broadcast-tower me-1"></i>Ao Vivo
+                            </span>
+                        {% elif channel.category_type == 'movie' %}
+                            <span class="badge bg-warning me-2">
+                                <i class="fas fa-film me-1"></i>Filme
+                            </span>
+                        {% else %}
+                            <span class="badge bg-info me-2">
+                                <i class="fas fa-tv me-1"></i>Série
+                            </span>
+                        {% endif %}
+                        
+                        {% if channel.group_title %}
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-folder me-1"></i>{{ channel.group_title }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="button" class="btn btn-outline-primary" onclick="testChannel({{ channel.id }})">
+                        <i class="fas fa-flask me-1"></i>
+                        Testar Conexão
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Video Player -->
+        <div class="player-container mb-4">
+            <video id="videoPlayer" class="w-100" controls style="max-height: 70vh;">
+                <source src="{{ channel.url }}" type="application/x-mpegURL">
+                <source src="{{ channel.url }}" type="video/mp4">
+                Seu navegador não suporta o elemento de vídeo.
+            </video>
+            
+            <div class="player-controls">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-light me-2" onclick="togglePlay()">
+                            <i class="fas fa-play" id="playIcon"></i>
+                        </button>
+                        <span class="text-white">{{ channel.name }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-light me-2" onclick="toggleFullscreen()">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="toggleMute()">
+                            <i class="fas fa-volume-up" id="volumeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Channel Actions -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Informações do Canal</h5>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td>{{ channel.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        {% if channel.category_type == 'live' %}Canal Ao Vivo
+                                        {% elif channel.category_type == 'movie' %}Filme
+                                        {% else %}Série
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if channel.group_title %}
+                                <tr>
+                                    <td><strong>Grupo:</strong></td>
+                                    <td>{{ channel.group_title }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if channel.tvg_id %}
+                                <tr>
+                                    <td><strong>TVG ID:</strong></td>
+                                    <td>{{ channel.tvg_id }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Status da Conexão</h5>
+                        <div id="connectionStatus">
+                            {% if channel.is_working == True %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Canal funcionando
+                                </div>
+                            {% elif channel.is_working == False %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    Canal offline
+                                </div>
+                            {% else %}
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-question-circle me-2"></i>
+                                    Status não verificado
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="copyUrl()">
+                                <i class="fas fa-copy me-1"></i>
+                                Copiar URL do Canal
+                            </button>
+                            <a href="{{ url_for('view_category', playlist_id=playlist.id, category_type=channel.category_type) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Voltar à Categoria
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+<script>
+function testChannel(channelId) {
+    const statusDiv = document.getElementById('connectionStatus');
+    
+    statusDiv.innerHTML = `
+        <div class="alert alert-info">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            Testando conexão...
+        </div>
+    `;
+    
+    fetch(`/api/channel/${channelId}/test`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            // Poll for status
+            setTimeout(() => {
+                fetch(`/api/channel/${channelId}/status`)
+                    .then(response => response.json())
+                    .then(status => {
+                        if (status.is_working === true) {
+                            statusDiv.innerHTML = `
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Canal funcionando
+                                </div>
+                            `;
+                        } else if (status.is_working === false) {
+                            statusDiv.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    Canal offline
+                                </div>
+                            `;
+                        }
+                    });
+            }, 2000);
+        })
+        .catch(error => {
+            statusDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao testar canal
+                </div>
+            `;
+            console.error('Error testing channel:', error);
+        });
+}
+
+function copyUrl() {
+    const url = "{{ channel.url }}";
+    navigator.clipboard.writeText(url).then(() => {
+        // Show success message
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>Copiado!';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 2000);
+    }).catch(err => {
+        console.error('Error copying URL:', err);
+    });
+}
+
+// Initialize video player
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('videoPlayer');
+    
+    video.addEventListener('error', function(e) {
+        console.error('Video error:', e);
+        // Show error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Erro ao carregar o vídeo. Verifique se o canal está funcionando.
+        `;
+        video.parentNode.insertBefore(errorDiv, video.nextSibling);
+    });
+});
+</script>
+{% endblock %}

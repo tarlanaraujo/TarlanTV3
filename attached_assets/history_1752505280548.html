@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico de Buscas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Histórico de Buscas
+                </h4>
+                <a href="{{ url_for('search') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nova Busca
+                </a>
+            </div>
+            <div class="card-body">
+                {% if searches %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Lista</th>
+                                <th>URL</th>
+                                <th>Canais</th>
+                                <th>Válidos</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for search in searches %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-list me-2"></i>
+                                        <div>
+                                            <strong>{{ search.title or 'Lista IPTV' }}</strong>
+                                            {% if search.channels_found > 0 %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ "%.1f"|format((search.valid_channels / search.channels_found * 100) if search.channels_found > 0 else 0) }}% válidos
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ search.url }}" target="_blank" class="text-decoration-none">
+                                        {{ search.url[:40] }}...
+                                        <i class="fas fa-external-link-alt ms-1"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ search.channels_found }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ search.valid_channels }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ search.search_date.strftime('%d/%m/%Y') }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ search.search_date.strftime('%H:%M') }}</small>
+                                </td>
+                                <td>
+                                    {% if search.status == 'completed' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Concluído
+                                        </span>
+                                    {% elif search.status == 'processing' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>Processando
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Erro
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('validate', search_id=search.id) }}" class="btn btn-sm btn-outline-primary" title="Visualizar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if search.status == 'completed' and search.valid_channels > 0 %}
+                                        <a href="{{ url_for('export_playlist', search_id=search.id) }}" class="btn btn-sm btn-outline-success" title="Exportar">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                    <h4>Nenhuma busca realizada</h4>
+                    <p class="text-muted">Comece fazendo sua primeira busca por listas IPTV.</p>
+                    <a href="{{ url_for('search') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Fazer Primeira Busca
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if searches %}
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                        <h5>{{ searches|length }}</h5>
+                        <small class="text-muted">Total de Buscas</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tv fa-2x text-info mb-2"></i>
+                        <h5>{{ searches|sum(attribute='channels_found') }}</h5>
+                        <small class="text-muted">Canais Encontrados</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h5>{{ searches|sum(attribute='valid_channels') }}</h5>
+                        <small class="text-muted">Canais Válidos</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-percentage fa-2x text-warning mb-2"></i>
+                        <h5>
+                            {% set total_found = searches|sum(attribute='channels_found') %}
+                            {% set total_valid = searches|sum(attribute='valid_channels') %}
+                            {{ "%.1f"|format((total_valid / total_found * 100) if total_found > 0 else 0) }}%
+                        </h5>
+                        <small class="text-muted">Taxa de Sucesso</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
