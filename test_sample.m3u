@@ -1,0 +1,8 @@
+#EXTM3U
+#EXT-X-SESSION-DATA:DATA-ID="com.xui.1_5_5r2"
+#EXTINF:-1 tvg-id="BR - A&E" tvg-name="A&E [FHD]" tvg-logo="http://cc90.one/APQ" group-title="Canais | Filmes e Séries",A&E [FHD]
+http://pfsv.io:80/Soluco/Juan1954/293.ts
+#EXTINF:-1 tvg-id="BR - Band Sports" tvg-name="Band Sports [FHD]" tvg-logo="http://cc90.one/ANX" group-title="Canais | Esportes",Band Sports [FHD]
+http://pfsv.io:80/Soluco/Juan1954/247.ts
+#EXTINF:-1 tvg-id="BR - Globo" tvg-name="Globo [FHD]" tvg-logo="http://cc90.one/GLO" group-title="Canais | Abertos",Globo [FHD]
+http://pfsv.io:80/Soluco/Juan1954/123.ts

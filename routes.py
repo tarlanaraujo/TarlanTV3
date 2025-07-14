@@ -3,6 +3,7 @@ from app import app, db
 from models import M3UPlaylist, Channel, SearchHistory, UserSession
 from m3u_validator import M3UValidator
 from web_scraper import get_website_text_content
+from temp_storage import TempStorage
 from datetime import datetime
 import hashlib
 import threading
@@ -79,23 +80,34 @@ def upload_m3u():
         # Check if playlist already exists
         existing_playlist = M3UPlaylist.query.filter_by(content_hash=content_hash).first()
         if existing_playlist:
-            return redirect(url_for('view_playlist', playlist_id=existing_playlist.id))
+            return redirect(url_for('direct_m3u_viewer', playlist_id=existing_playlist.id))
         
         # Process M3U content directly without database
         validator = M3UValidator()
         channels_data = validator.parse_m3u_content(content)
         
-        # Store in session for quick access
-        session['current_m3u_data'] = {
-            'name': playlist_name,
-            'source_url': source_url,
-            'source_type': source_type,
-            'content_hash': content_hash,
-            'channels': channels_data,
-            'upload_date': datetime.now().strftime('%d/%m/%Y %H:%M')
-        }
+        # Create a simple playlist record for reference
+        playlist = M3UPlaylist(
+            name=playlist_name,
+            source_url=source_url,
+            source_type=source_type,
+            content_hash=content_hash,
+            total_channels=len(channels_data),
+            status='completed'
+        )
+        db.session.add(playlist)
+        db.session.commit()
         
-        return redirect(url_for('simple_m3u_viewer'))
+        # Store in temporary storage for quick access
+        temp_storage = TempStorage()
+        temp_storage.save_playlist(
+            playlist.id,
+            playlist_name,
+            content_hash,
+            channels_data
+        )
+        
+        return redirect(url_for('direct_m3u_viewer', playlist_id=playlist.id))
         
     except Exception as e:
         app.logger.error(f"Error processing M3U: {e}")
@@ -112,6 +124,62 @@ def simple_m3u_viewer():
     
     # Categorize channels quickly
     channels = m3u_data['channels']
+    live_channels = []
+    movie_channels = []
+    series_channels = []
+    
+    for channel in channels:
+        category_type = categorize_channel_simple(channel['name'], channel.get('group', ''))
+        channel['category_type'] = category_type
+        
+        if category_type == 'live':
+            live_channels.append(channel)
+        elif category_type == 'movie':
+            movie_channels.append(channel)
+        else:
+            series_channels.append(channel)
+    
+    # Convert to JSON for JavaScript
+    import json
+    channels_json = json.dumps(channels, ensure_ascii=False)
+    
+    return render_template('m3u_simple_viewer.html',
+                         playlist_name=m3u_data['name'],
+                         upload_date=m3u_data['upload_date'],
+                         total_channels=len(channels),
+                         live_count=len(live_channels),
+                         movie_count=len(movie_channels),
+                         series_count=len(series_channels),
+                         channels_json=channels_json)
+
+@app.route('/m3u/viewer/<int:playlist_id>')
+def simple_m3u_viewer_by_id(playlist_id):
+    """Simple M3U viewer by playlist ID"""
+    playlist = M3UPlaylist.query.get_or_404(playlist_id)
+    
+    # Get content from session or reconstruct from database
+    m3u_data = session.get('current_m3u_data')
+    if not m3u_data or m3u_data.get('playlist_id') != playlist_id:
+        # Reconstruct basic data from playlist
+        m3u_data = {
+            'name': playlist.name,
+            'upload_date': playlist.created_date.strftime('%d/%m/%Y %H:%M'),
+            'channels': []  # We'll need to parse again if needed
+        }
+        
+        # If we have source_url, try to re-fetch
+        if playlist.source_url:
+            validator = M3UValidator()
+            content = validator.fetch_m3u_content(playlist.source_url)
+            if content:
+                m3u_data['channels'] = validator.parse_m3u_content(content)
+    
+    channels = m3u_data['channels']
+    if not channels:
+        flash('Erro ao carregar canais da playlist', 'error')
+        return redirect(url_for('index'))
+    
+    # Categorize channels quickly
     live_channels = []
     movie_channels = []
     series_channels = []
@@ -595,6 +663,64 @@ def validate_channels_background(playlist_id):
         playlist = M3UPlaylist.query.get(playlist_id)
         playlist.valid_channels = valid_count
         db.session.commit()
+
+@app.route('/direct/viewer/<int:playlist_id>')
+def direct_m3u_viewer(playlist_id):
+    """Direct M3U viewer with immediate loading"""
+    try:
+        # Load from temporary storage
+        temp_storage = TempStorage()
+        temp_data = temp_storage.load_playlist(playlist_id)
+        
+        if temp_data:
+            channels = temp_data['channels']
+            playlist_name = temp_data['name']
+        else:
+            # Fallback to database
+            playlist = M3UPlaylist.query.get_or_404(playlist_id)
+            
+            # Re-fetch and parse M3U content
+            if playlist.source_url:
+                validator = M3UValidator()
+                content = validator.fetch_m3u_content(playlist.source_url)
+                if content:
+                    channels = validator.parse_m3u_content(content)
+                    playlist_name = playlist.name
+                else:
+                    flash('Erro ao carregar conteúdo M3U', 'error')
+                    return redirect(url_for('index'))
+            else:
+                flash('Playlist não encontrada', 'error')
+                return redirect(url_for('index'))
+        
+        # Quick categorization
+        live_channels = []
+        movie_channels = []
+        series_channels = []
+        
+        for channel in channels:
+            category_type = categorize_channel_simple(channel['name'], channel.get('group_title', ''))
+            channel['category_type'] = category_type
+            
+            if category_type == 'live':
+                live_channels.append(channel)
+            elif category_type == 'movie':
+                movie_channels.append(channel)
+            else:
+                series_channels.append(channel)
+        
+        return render_template('m3u_direct_viewer.html',
+                             playlist_name=playlist_name,
+                             total_channels=len(channels),
+                             live_count=len(live_channels),
+                             movie_count=len(movie_channels),
+                             series_count=len(series_channels),
+                             channels=channels)
+    
+    except Exception as e:
+        app.logger.error(f"Error loading direct viewer: {e}")
+        flash('Erro ao carregar visualizador', 'error')
+        return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def not_found(error):

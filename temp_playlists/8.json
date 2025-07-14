@@ -1,0 +1,30 @@
+{
+  "id": 8,
+  "name": "test_new.m3u",
+  "content_hash": "47b0b8f696da12483b59e42f538f4a13",
+  "channels": [
+    {
+      "name": "Canal Test 1",
+      "duration": -1,
+      "tvg_id": "",
+      "tvg_name": "",
+      "tvg_logo": "",
+      "logo": "",
+      "group": "",
+      "category": "",
+      "url": "http://test1.stream"
+    },
+    {
+      "name": "Canal Test 2",
+      "duration": -1,
+      "tvg_id": "",
+      "tvg_name": "",
+      "tvg_logo": "",
+      "logo": "",
+      "group": "",
+      "category": "",
+      "url": "http://test2.stream"
+    }
+  ],
+  "timestamp": "2025-07-14T16:23:28.393878"
+}

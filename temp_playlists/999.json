@@ -1,0 +1,12 @@
+{
+  "id": 999,
+  "name": "Test Playlist",
+  "content_hash": "testhash",
+  "channels": [
+    {
+      "name": "Test Channel",
+      "url": "http://example.com"
+    }
+  ],
+  "timestamp": "2025-07-14T16:23:21.642827"
+}
