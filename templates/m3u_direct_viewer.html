@@ -101,7 +101,7 @@
         <div class="col-12">
             <ul class="nav nav-tabs" id="categoryTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" 
+                    <button class="nav-link" id="all-tab" data-bs-toggle="tab" 
                             data-bs-target="#all-content" type="button" role="tab">
                         <i class="fas fa-th-large me-1"></i>
                         Todos <span class="badge bg-secondary ms-1">{{ total_channels }}</span>
@@ -115,7 +115,7 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="movie-tab" data-bs-toggle="tab" 
+                    <button class="nav-link active" id="movie-tab" data-bs-toggle="tab" 
                             data-bs-target="#movie-content" type="button" role="tab">
                         <i class="fas fa-film me-1"></i>
                         Filmes <span class="badge bg-warning ms-1">{{ movie_count }}</span>
@@ -136,7 +136,7 @@
     <div class="row">
         <div class="col-12">
             <div class="tab-content" id="categoryTabsContent">
-                <div class="tab-pane fade show active" id="all-content" role="tabpanel">
+                <div class="tab-pane fade" id="all-content" role="tabpanel">
                     <div id="all-channels" class="row">
                         <!-- All channels -->
                         {% for channel in channels %}
@@ -223,7 +223,7 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="movie-content" role="tabpanel">
+                <div class="tab-pane fade show active" id="movie-content" role="tabpanel">
                     <div id="movie-channels" class="row">
                         <!-- Movie channels -->
                         {% for channel in channels %}
