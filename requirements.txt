@@ -4,3 +4,4 @@ SQLAlchemy
 gunicorn
 Werkzeug
 requests
+beautifulsoup4
