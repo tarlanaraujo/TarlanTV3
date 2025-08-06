@@ -5,8 +5,14 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
+# Set up logging based on environment
+if os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RAILWAY_ENVIRONMENT'):
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(name)s %(message)s'
+    )
+else:
+    logging.basicConfig(level=logging.DEBUG)
 
 class Base(DeclarativeBase):
     pass
@@ -37,5 +43,9 @@ with app.app_context():
 import routes  # noqa: F401
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Get port from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    # Disable debug mode in production
+    debug_mode = not (os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RAILWAY_ENVIRONMENT'))
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
 
